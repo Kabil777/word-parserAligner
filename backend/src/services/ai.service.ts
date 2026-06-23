@@ -39,7 +39,8 @@ Format:
         "bold": true,
         "spacingBefore": 12,
         "spacingAfter": 6,
-        "lineSpacing": 1.15
+        "lineSpacing": 1.15,
+        "indent": 0
       }
     }
   ]
@@ -49,33 +50,41 @@ Default style values to use (adjust only if document context clearly requires it
 
 heading1:
   alignment: "left", fontSize: 16, bold: true
-  spacingBefore: 12, spacingAfter: 6, lineSpacing: 1.15
+  spacingBefore: 12, spacingAfter: 6, lineSpacing: 1.15, indent: 0
 
 heading2:
   alignment: "left", fontSize: 13, bold: true
-  spacingBefore: 10, spacingAfter: 4, lineSpacing: 1.15
+  spacingBefore: 10, spacingAfter: 4, lineSpacing: 1.15, indent: 12
 
 heading3:
   alignment: "left", fontSize: 12, bold: true
-  spacingBefore: 8, spacingAfter: 4, lineSpacing: 1.15
+  spacingBefore: 8, spacingAfter: 4, lineSpacing: 1.15, indent: 24
 
 body:
   alignment: "justify", fontSize: 11, bold: false
-  spacingBefore: 0, spacingAfter: 8, lineSpacing: 1.5
+  spacingBefore: 0, spacingAfter: 8, lineSpacing: 1.5, indent: 0
 
 caption:
   alignment: "center", fontSize: 9, bold: false
-  spacingBefore: 4, spacingAfter: 4, lineSpacing: 1.0
+  spacingBefore: 4, spacingAfter: 4, lineSpacing: 1.0, indent: 0
 
 other:
   alignment: "left", fontSize: 11, bold: false
-  spacingBefore: 0, spacingAfter: 6, lineSpacing: 1.15
+  spacingBefore: 0, spacingAfter: 6, lineSpacing: 1.15, indent: 0
 
 Rules:
 - semanticType must be one of: heading1, heading2, heading3, body, caption, other
-- Group ALL paragraphs of the same role into ONE group — do not split body into multiple groups
-- Skip empty paragraphs
-- Use paragraph text content AND its fontSize/bold/italic metadata to determine the correct role`;
+- Detect sub-headings based on text structure:
+  - Paragraphs starting with patterns like "1. ", "Chapter 1", "Section 1" should be heading1.
+  - Sub-headings starting with patterns like "1.1 ", "A.1 ", "2.3 " (numeric/alphabetic hierarchy with exactly one dot) should be heading2.
+  - Sub-subheadings starting with patterns like "1.1.1 ", "2.3.4 " (numeric hierarchy with two dots) should be heading3.
+- Assign default indentation to headings to represent visual structure/hierarchy:
+  - heading1 gets 0pt indent (no indentation).
+  - heading2 gets 12pt left indent.
+  - heading3 gets 24pt left indent.
+- Group ALL paragraphs of the same role into ONE group (e.g. all paragraphs classified as heading2 should belong to the same single group object) — do not split heading2 or body into multiple group objects.
+- Skip empty paragraphs.
+- Use paragraph text content AND its fontSize/bold/italic metadata to determine the correct role.`;
 
 export async function analyzeDocumentStructure(
   paragraphs: ParagraphInfo[],
