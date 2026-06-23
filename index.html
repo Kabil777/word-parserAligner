@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Renderer & Aligner</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent: #3b82f6;
+            --border: #334155;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+        .controls {
+            width: 350px;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .preview-container {
+            flex-grow: 1;
+            background: #ffffff;
+            color: #000000;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .preview-header {
+            padding: 10px 20px;
+            background: var(--panel-bg);
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border);
+            border-radius: 12px 12px 0 0;
+            font-weight: 600;
+        }
+        .preview-content {
+            flex-grow: 1;
+            position: relative;
+            overflow: auto;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        h2 { margin-top: 0; font-size: 1.5rem; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+        .grid-4 input { padding: 8px 4px; text-align: center; }
+        
+        #rendered-element {
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background: rgba(59, 130, 246, 0.1); 
+            border: 1px dashed var(--accent); 
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2>Renderer Specs</h2>
+        
+        <div class="form-group">
+            <label>Target Word / Text</label>
+            <input type="text" id="input-word" value="Hello World">
+        </div>
+
+        <div class="form-group">
+            <label>Header Level</label>
+            <select id="input-tag">
+                <option value="div">Standard Container (div)</option>
+                <option value="h1">Header 1 (h1)</option>
+                <option value="h2">Header 2 (h2)</option>
+                <option value="h3">Header 3 (h3)</option>
+                <option value="p">Paragraph (p)</option>
+                <option value="span">Inline (span)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Alignment</label>
+            <select id="input-align">
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+                <option value="justify">Justify</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Margin (Top, Right, Bottom, Left) px</label>
+            <div class="grid-4">
+                <input type="number" id="margin-t" value="20">
+                <input type="number" id="margin-r" value="20">
+                <input type="number" id="margin-b" value="20">
+                <input type="number" id="margin-l" value="20">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Padding (Top, Right, Bottom, Left) px</label>
+            <div class="grid-4">
+                <input type="number" id="padding-t" value="10">
+                <input type="number" id="padding-r" value="10">
+                <input type="number" id="padding-b" value="10">
+                <input type="number" id="padding-l" value="10">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Font Family</label>
+                <select id="input-font">
+                    <option value="sans-serif">Sans-serif</option>
+                    <option value="serif">Serif</option>
+                    <option value="monospace">Monospace</option>
+                    <option value="cursive">Cursive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Font Size</label>
+                <input type="text" id="input-size" value="24px">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Font Weight</label>
+                <select id="input-weight">
+                    <option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                    <option value="100">Light</option>
+                    <option value="900">Black</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Font Style</label>
+                <select id="input-style">
+                    <option value="normal">Normal</option>
+                    <option value="italic">Italic</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Text Color</label>
+            <input type="color" id="input-color" value="#000000">
+        </div>
+
+    </div>
+
+    <div class="preview-container">
+        <div class="preview-header">Live Render Preview</div>
+        <div class="preview-content" id="preview-canvas">
+            <!-- The element will be generated and injected here -->
+        </div>
+    </div>
+
+    <script>
+        function updateRender() {
+            const canvas = document.getElementById('preview-canvas');
+            
+            // Gather values
+            const word = document.getElementById('input-word').value;
+            const tag = document.getElementById('input-tag').value;
+            const align = document.getElementById('input-align').value;
+            const font = document.getElementById('input-font').value;
+            const size = document.getElementById('input-size').value;
+            const weight = document.getElementById('input-weight').value;
+            const style = document.getElementById('input-style').value;
+            const color = document.getElementById('input-color').value;
+
+            const mt = document.getElementById('margin-t').value;
+            const mr = document.getElementById('margin-r').value;
+            const mb = document.getElementById('margin-b').value;
+            const ml = document.getElementById('margin-l').value;
+
+            const pt = document.getElementById('padding-t').value;
+            const pr = document.getElementById('padding-r').value;
+            const pb = document.getElementById('padding-b').value;
+            const pl = document.getElementById('padding-l').value;
+
+            // Create new element
+            const el = document.createElement(tag);
+            el.id = 'rendered-element';
+            el.innerText = word || ' ';
+
+            // Apply styles
+            el.style.textAlign = align;
+            el.style.fontFamily = font;
+            el.style.fontSize = size;
+            el.style.fontWeight = weight;
+            el.style.fontStyle = style;
+            el.style.color = color;
+            
+            el.style.margin = `${mt}px ${mr}px ${mb}px ${ml}px`;
+            el.style.padding = `${pt}px ${pr}px ${pb}px ${pl}px`;
+
+            if (tag === 'span') {
+                el.style.display = 'inline-block';
+            }
+
+            canvas.innerHTML = '';
+            canvas.appendChild(el);
+        }
+
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', updateRender);
+        });
+
+        updateRender();
+    </script>
+</body>
+</html>
