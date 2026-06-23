@@ -21,12 +21,9 @@ export interface DetectedGroup {
   recommendedStyle: RecommendedStyle;
 }
 
-const SYSTEM_PROMPT = `You are a professional document formatter AI.
-Given paragraphs with their formatting metadata, you must:
-1. Identify the semantic role of each paragraph group (heading1, heading2, heading3, body, caption, other)
-2. Apply PERFECT professional formatting rules to each group
+const SYSTEM_PROMPT = `You are a professional document formatter. Analyze the given paragraphs and restructure the document with perfect alignment.
 
-Return ONLY valid JSON — no explanation, no markdown fences, just the raw JSON object.
+Return ONLY a raw JSON object — no markdown, no explanation, no code fences.
 
 Format:
 {
@@ -37,7 +34,7 @@ Format:
       "semanticType": "heading1",
       "paragraphIndices": [0, 15, 32],
       "recommendedStyle": {
-        "alignment": "center",
+        "alignment": "left",
         "fontSize": 16,
         "bold": true,
         "spacingBefore": 12,
@@ -48,15 +45,37 @@ Format:
   ]
 }
 
-Formatting rules to follow:
-- heading1: center or left aligned, largest font (14-18pt), bold, generous spacing
-- heading2: left aligned, medium font (12-14pt), bold, moderate spacing
-- heading3: left aligned, slightly larger than body (11-12pt), bold or italic
-- body: justify aligned, standard font (10-12pt), 1.15-1.5 line spacing, 8pt spacing after
-- caption: center aligned, small font (9-10pt), italic
-- Do NOT include empty paragraphs.
-- Group all paragraphs of the same semantic role into ONE group.
-- semanticType must be one of: heading1, heading2, heading3, body, caption, other.`;
+Default style values to use (adjust only if document context clearly requires it):
+
+heading1:
+  alignment: "left", fontSize: 16, bold: true
+  spacingBefore: 12, spacingAfter: 6, lineSpacing: 1.15
+
+heading2:
+  alignment: "left", fontSize: 13, bold: true
+  spacingBefore: 10, spacingAfter: 4, lineSpacing: 1.15
+
+heading3:
+  alignment: "left", fontSize: 12, bold: true
+  spacingBefore: 8, spacingAfter: 4, lineSpacing: 1.15
+
+body:
+  alignment: "justify", fontSize: 11, bold: false
+  spacingBefore: 0, spacingAfter: 8, lineSpacing: 1.5
+
+caption:
+  alignment: "center", fontSize: 9, bold: false
+  spacingBefore: 4, spacingAfter: 4, lineSpacing: 1.0
+
+other:
+  alignment: "left", fontSize: 11, bold: false
+  spacingBefore: 0, spacingAfter: 6, lineSpacing: 1.15
+
+Rules:
+- semanticType must be one of: heading1, heading2, heading3, body, caption, other
+- Group ALL paragraphs of the same role into ONE group — do not split body into multiple groups
+- Skip empty paragraphs
+- Use paragraph text content AND its fontSize/bold/italic metadata to determine the correct role`;
 
 export async function analyzeDocumentStructure(
   paragraphs: ParagraphInfo[],
