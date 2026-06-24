@@ -240,11 +240,14 @@ interface AIPanelProps {
   onAnalyze: (apiKey: string) => void;
   isAnalyzing: boolean;
   analysisError: string | null;
+  userInstructions: string;
+  onUserInstructionsChange: (val: string) => void;
 }
 
 export function AIStructurePanel({
   hasSession, detectedGroups, groupConfig,
   onGroupStyleChange, onAnalyze, isAnalyzing, analysisError,
+  userInstructions, onUserInstructionsChange,
 }: AIPanelProps) {
   const [showDialog, setShowDialog] = useState(false);
   const done = detectedGroups.length > 0;
@@ -265,7 +268,24 @@ export function AIStructurePanel({
         />
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-4">
+
+        {/* Custom AI Guidelines / Formatting instructions */}
+        <div className="space-y-1.5 bg-secondary/20 p-2.5 rounded-lg border border-border/40">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+            AI Styling Preferences
+          </label>
+          <textarea
+            value={userInstructions}
+            onChange={e => onUserInstructionsChange(e.target.value)}
+            placeholder="e.g. Keep first heading centered, remaining headings left-aligned. Or: Make H3 font size 14pt."
+            rows={3}
+            disabled={isAnalyzing}
+            className="w-full text-xs px-2.5 py-2 rounded-lg bg-secondary border border-border
+              text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring
+              resize-none transition-all duration-200"
+          />
+        </div>
 
         {/* Primary action button — uses app primary color */}
         <button
@@ -286,7 +306,7 @@ export function AIStructurePanel({
         {/* Helper text */}
         {!done && !isAnalyzing && (
           <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-            Detects headings, body and captions — applies default alignment rules automatically.
+            Detects headings, body and captions — applies default rules and your preferences.
           </p>
         )}
 

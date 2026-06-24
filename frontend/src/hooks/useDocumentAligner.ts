@@ -45,6 +45,7 @@ export function useDocumentAligner() {
   const [isExporting,    setIsExporting]    = useState(false);
   const [error,          setError]          = useState<string | null>(null);
   const [analysisError,  setAnalysisError]  = useState<string | null>(null);
+  const [userInstructions, setUserInstructions] = useState('');
 
   // ── Core apply ───────────────────────────────────────────────────────────────
   const applyWithConfig = useCallback(async (
@@ -116,7 +117,7 @@ export function useDocumentAligner() {
     setAnalysisError(null);
 
     const run = async (sessionId: string) => {
-      const groups = await documentService.analyzeStructure(sessionId, apiKey);
+      const groups = await documentService.analyzeStructure(sessionId, apiKey, userInstructions);
       setDetectedGroups(groups);
 
       // Auto-populate groupConfig from AI's recommendedStyle — instant restructure
@@ -146,7 +147,7 @@ export function useDocumentAligner() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [refreshSession]);
+  }, [refreshSession, userInstructions]);
 
   // ── Word style change ────────────────────────────────────────────────────────
   const handleStyleChange = useCallback((styleId: string, patch: Partial<StyleSpec>) => {
@@ -201,6 +202,8 @@ export function useDocumentAligner() {
     isExporting,
     error,
     analysisError,
+    userInstructions,
+    setUserInstructions,
     handleUpload,
     handleStyleChange,
     handleGroupStyleChange,

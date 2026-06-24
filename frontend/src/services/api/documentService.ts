@@ -16,8 +16,9 @@ export const documentService = {
   analyzeStructure: async (
     sessionId: string,
     apiKey: string,
+    userInstructions?: string,
   ): Promise<DetectedStyleGroup[]> => {
-    const res = await axiosInstance.post('/analysis/analyze', { sessionId, apiKey });
+    const res = await axiosInstance.post('/analysis/analyze', { sessionId, apiKey, userInstructions });
     return res.data.data.detectedGroups as DetectedStyleGroup[];
   },
 

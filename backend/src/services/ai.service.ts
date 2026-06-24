@@ -89,6 +89,7 @@ Rules:
 export async function analyzeDocumentStructure(
   paragraphs: ParagraphInfo[],
   apiKey: string,
+  userInstructions?: string,
 ): Promise<DetectedGroup[]> {
   const client = new OpenAI({
     baseURL: 'https://integrate.api.nvidia.com/v1',
@@ -114,7 +115,7 @@ export async function analyzeDocumentStructure(
       model: 'openai/gpt-oss-120b',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user',   content: `Paragraphs:\n${JSON.stringify(payload, null, 2)}` },
+        { role: 'user',   content: `Paragraphs:\n${JSON.stringify(payload, null, 2)}${userInstructions ? `\n\nUser Styling Preferences / Constraints:\n${userInstructions}` : ''}` },
       ],
       temperature: 0.1,
       max_tokens: 4096,

@@ -5,7 +5,11 @@ import { analyzeDocumentStructure } from '../services/ai.service.js';
 export class AnalysisController {
   async analyzeStructure(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { sessionId, apiKey: clientKey } = req.body as { sessionId: string; apiKey?: string };
+      const { sessionId, apiKey: clientKey, userInstructions } = req.body as {
+        sessionId: string;
+        apiKey?: string;
+        userInstructions?: string;
+      };
 
       // Use client-supplied key, or fall back to server .env key
       const apiKey = clientKey || process.env.NVIDIA_API_KEY || '';
@@ -26,7 +30,7 @@ export class AnalysisController {
       }
 
       const paragraphs = await extractParagraphInfo(session.buffer);
-      const detectedGroups = await analyzeDocumentStructure(paragraphs, apiKey);
+      const detectedGroups = await analyzeDocumentStructure(paragraphs, apiKey, userInstructions);
       res.json({ success: true, data: { detectedGroups } });
     } catch (err) {
       next(err);

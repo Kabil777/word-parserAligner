@@ -27,6 +27,8 @@ export default function WorkspacePage() {
     isExporting,
     error,
     analysisError,
+    userInstructions,
+    setUserInstructions,
     handleUpload,
     handleStyleChange,
     handleGroupStyleChange,
@@ -225,6 +227,8 @@ export default function WorkspacePage() {
                 onAnalyze={handleAnalyze}
                 isAnalyzing={isAnalyzing}
                 analysisError={analysisError}
+                userInstructions={userInstructions}
+                onUserInstructionsChange={setUserInstructions}
               />
             </div>
           </div>
